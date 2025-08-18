@@ -1,12 +1,12 @@
-import { Button } from "@/components/ui/button";
 import { useMap } from "@/hooks/map/useMap";
-import { useEffect, useMemo, useRef, useState } from "react";
+import useThemeStore from "@/stores/theme";
+import { useEffect, useMemo, useRef } from "react";
 
 export default function MapPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   // Recreate map when layout width/height changes since the library doesn't support resize
   const didMountRef = useRef(false);
-  const [isFullscreen, setIsFullscreen] = useState(true);
+  const { isFullscreen } = useThemeStore();
   const mapConfig = useMemo(
     () => ({
       clientId: "8PHfV8LO4Ra8YcHnmz4UpY",
@@ -21,13 +21,6 @@ export default function MapPage() {
       initMap(mapRef);
     }
   }, [initMap]);
-
-  useEffect(() => {
-    document.body.setAttribute(
-      "data-screen-mode",
-      isFullscreen ? "fullscreen" : ""
-    );
-  }, [isFullscreen]);
 
   useEffect(() => {
     if (!didMountRef.current) {
@@ -55,14 +48,6 @@ export default function MapPage() {
       className="relative h-full w-full
       flex flex-col"
     >
-      <div className="w-full h-[100px] bg-blue-100 flex items-center justify-center">
-        <Button
-          variant="outline"
-          onClick={() => setIsFullscreen(!isFullscreen)}
-        >
-          Toggle Width
-        </Button>
-      </div>
       <div className="flex-1">
         <div className="h-[50%] w-full fullscreen:h-full">
           <div ref={mapRef} className="h-full w-full"></div>
