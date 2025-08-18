@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant fullscreen (&:where([data-screen-mode=fullscreen], [data-screen-mode=fullscreen] *));
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
