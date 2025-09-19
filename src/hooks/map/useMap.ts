@@ -2,10 +2,12 @@ import { BuildingType } from "@/enums/building";
 import { getMapsInstance } from "@/lib/map";
 import { useGetMapDataQuery } from "@/services/queries/map";
 import type { MapDataPayload } from "@/types/map";
+import { mapMyLocationToMarker } from "@/utils/map";
 import { DabeeoMap, type MapOptions } from "dabeeomaps";
 import type { IBuilding } from "dabeeomaps/dist/src/model/map/IBuilding";
 import cloneDeep from "lodash.clonedeep";
 import { type RefObject, useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 type Error = {
   isError: boolean;
@@ -16,6 +18,12 @@ export const useMap = <T extends HTMLElement>(
   config: MapDataPayload,
   clearOutdoorBuildings: boolean = true
 ) => {
+  const [searchParams] = useSearchParams();
+
+  const studioFloorID = searchParams.get("studioFloorID");
+  const studioPoiId = searchParams.get("studioPoiId");
+  const floorGuideType = searchParams.get("floorGuideType");
+
   const [currentMap, setCurrentMap] = useState<DabeeoMap | undefined>(
     undefined
   );
@@ -134,14 +142,17 @@ export const useMap = <T extends HTMLElement>(
         const newMap = await getMapsInstance().showMap(
           container.current,
           {
-            enableGeoreferencing: !hasBuildings,
             framerate: 60,
             showWaterMarker: false,
+            enableGeoreferencing: true,
 
             ...options,
           },
-          clonedMapData
+          mapData
         );
+        newMap?.context.addAllBuilding();
+        const markers = mapMyLocationToMarker();
+        await newMap?.markers.set({ marker: markers ? [markers] : [] });
 
         if (!newMap) {
           setError({

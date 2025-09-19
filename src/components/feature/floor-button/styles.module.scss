@@ -1,0 +1,24 @@
+@use "@/styles/index.css" as *;
+
+.floor-button {
+  @apply text-text-main01 h-[calc(56*var(--vh-unit))] w-[calc(60*var(--vh-unit))] rounded-md px-[calc(19*var(--vh-unit))] py-[calc(10*var(--vh-unit))] text-[calc(22*var(--vh-unit))] leading-[calc(36*var(--vh-unit))] transition-all duration-300;
+  @apply border-not-contrast-gray-999 border border-solid;
+  @apply widescreen:w-[calc(208*var(--vh-unit))];
+  @apply widescreen:bg-gray-bda38c-transparent-10 widescreen:contrast:bg-white-transparent-10;
+
+  &:focus {
+    @apply border-not-contrast-red-fd2323 border-[calc(3*var(--vh-unit))];
+  }
+
+  &:active {
+    @apply bg-not-contrast-gray-67615d text-not-contrast-white border-transparent;
+  }
+
+  &:disabled {
+    @apply bg-not-contrast-gray-ccc text-not-contrast-gray-282828 border-not-contrast-gray-ccc;
+  }
+
+  &--selected {
+    @apply bg-sub01 text-text-white;
+  }
+}

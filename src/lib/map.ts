@@ -26,12 +26,5 @@ class MapInstance {
 }
 
 export const getMapsInstance = () => MapInstance.getInstance();
-export const getMapData = async (params: MapDataPayload) => {
-  try {
-    const mapData = await MapInstance.getMapData(params);
-    return mapData;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
+export const getMapData = (params: MapDataPayload) =>
+  MapInstance.getMapData(params);
