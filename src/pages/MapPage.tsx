@@ -1,6 +1,9 @@
+import { Button } from "@/components/ui/button";
+import { useMapEvents } from "@/hooks/map";
 import { useMap } from "@/hooks/map/useMap";
 import useThemeStore from "@/stores/theme";
-import { useEffect, useMemo, useRef } from "react";
+import { mapPoiToMarker } from "@/utils/marker";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function MapPage() {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -9,12 +12,13 @@ export default function MapPage() {
   const { isFullscreen } = useThemeStore();
   const mapConfig = useMemo(
     () => ({
-      clientId: "8PHfV8LO4Ra8YcHnmz4UpY",
-      clientSecret: "27d36e65fbc948e948fead7361a841e1",
+      clientId: "fEuxPAfr4Fu9Xvoe2LnTYV",
+      clientSecret: "0b855d1ba23ef069cd5d5e82a789eecb",
     }),
     []
   );
-  const { initMap, cleanupMap, loading } = useMap(mapConfig);
+  const { initMap, cleanupMap, loading, currentMap } = useMap(mapConfig);
+  const [markerIds, setMarkerIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (mapRef.current) {
@@ -38,6 +42,17 @@ export default function MapPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFullscreen]);
 
+  useMapEvents({
+    mapContainer: mapRef,
+    onPoiClick: async (data) => {
+      const marker = mapPoiToMarker(data?.[0]);
+      if (marker) {
+        const ids = await currentMap?.markers?.set({ marker: [marker] });
+        setMarkerIds((prev) => [...prev, ...(Array.isArray(ids) ? ids : [])]);
+      }
+    },
+  });
+
   useEffect(() => {
     return () => {
       cleanupMap();
@@ -48,6 +63,23 @@ export default function MapPage() {
       className="relative h-full w-full
       flex flex-col"
     >
+      <div className="h-[100px] w-full flex items-center justify-center gap-3">
+        <div>
+          <Button>Add Maker</Button>
+        </div>
+        <div>
+          <Button
+            onClick={() => {
+              console.log(1111, markerIds);
+              currentMap?.markers?.clearAll();
+              // currentMap?.markers?.clear(markerIds);
+              setMarkerIds([]);
+            }}
+          >
+            Remove Marker
+          </Button>
+        </div>
+      </div>
       <div className="flex-1">
         <div className="h-[50%] w-full fullscreen:h-full">
           <div ref={mapRef} className="h-full w-full"></div>

@@ -1,9 +1,7 @@
-import { BuildingType } from "@/enums/building";
 import { getMapsInstance } from "@/lib/map";
 import { useGetMapDataQuery } from "@/services/queries/map";
 import type { MapDataPayload } from "@/types/map";
-import { DabeeoMap, type MapOptions } from "dabeeomaps";
-import type { IBuilding } from "dabeeomaps/dist/src/model/map/IBuilding";
+import { CAMERA_TYPE, DabeeoMap, type MapOptions } from "dabeeomaps";
 import cloneDeep from "lodash.clonedeep";
 import { type RefObject, useCallback, useEffect, useState } from "react";
 
@@ -27,73 +25,6 @@ export const useMap = <T extends HTMLElement>(
   const [isMapReady, setIsMapReady] = useState<boolean>(false);
 
   const { data: mapData, isFetching, isError } = useGetMapDataQuery(config);
-
-  const removeBuilding = useCallback(
-    (buildingId: string, newMap: DabeeoMap) => {
-      if (!newMap) return;
-      newMap.context?.removeBuilding?.(buildingId);
-    },
-    []
-  );
-
-  const addBuilding = useCallback(
-    async (buildingId?: string, newMap?: DabeeoMap) => {
-      try {
-        if (!newMap || !buildingId) {
-          return;
-        }
-
-        await newMap.context?.addBuilding?.(buildingId);
-      } catch (error) {
-        setError({
-          isError: true,
-          message: "Failed to add building",
-        });
-        console.error(error);
-      }
-    },
-    []
-  );
-
-  const initBuildings = useCallback(
-    async (buildings: IBuilding[], newMap?: DabeeoMap) => {
-      try {
-        if (!newMap || !Array.isArray(buildings) || !buildings?.length) {
-          return;
-        }
-
-        for (const building of buildings) {
-          removeBuilding(building.id, newMap);
-        }
-
-        await addBuilding(buildings[0].id, newMap);
-      } catch (error) {
-        setError({
-          isError: true,
-          message: "Failed to initialize buildings",
-        });
-        console.error(error);
-      }
-    },
-    [removeBuilding, addBuilding]
-  );
-
-  const filterBuildings = useCallback(
-    (buildings?: IBuilding[]) => {
-      if (!buildings || !Array.isArray(buildings)) {
-        return [];
-      }
-
-      if (clearOutdoorBuildings) {
-        return buildings.filter(
-          (building) => building.buildingType !== BuildingType.OUTDOOR
-        );
-      }
-
-      return buildings;
-    },
-    [clearOutdoorBuildings]
-  );
 
   const initMap = useCallback(
     async (container: RefObject<T | null>, options?: Partial<MapOptions>) => {
@@ -125,18 +56,15 @@ export const useMap = <T extends HTMLElement>(
 
         const clonedMapData = cloneDeep(mapData);
 
-        const mapInfo = clonedMapData?.dataMapInfo?.getMapInfo?.();
-        const hasBuildings =
-          Array.isArray(mapInfo?.buildings) && mapInfo?.buildings?.length
-            ? true
-            : false;
-
         const newMap = await getMapsInstance().showMap(
           container.current,
           {
-            enableGeoreferencing: !hasBuildings,
+            camera: CAMERA_TYPE.D2,
+            enableGeoreferencing: true,
             framerate: 60,
             showWaterMarker: false,
+            showPoi: true,
+            spriteEnable: false,
 
             ...options,
           },
@@ -152,9 +80,7 @@ export const useMap = <T extends HTMLElement>(
           return;
         }
 
-        if (hasBuildings && clearOutdoorBuildings) {
-          initBuildings(filterBuildings(mapInfo?.buildings), newMap);
-        }
+        await newMap?.context.addAllBuilding();
 
         setCurrentMap(newMap);
         setError({
@@ -175,7 +101,7 @@ export const useMap = <T extends HTMLElement>(
         setLoading(false);
       }
     },
-    [mapData, initBuildings, filterBuildings, clearOutdoorBuildings]
+    [mapData]
   );
 
   const cleanupMap = useCallback(() => {

@@ -18,7 +18,7 @@
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "dabeeomaps": "^4.90.2",
+    "dabeeomaps": "^4.80.2",
     "lodash.clonedeep": "^4.5.0",
     "lucide-react": "^0.539.0",
     "react": "^19.1.1",
